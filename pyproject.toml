@@ -1,40 +1,34 @@
-[project]
+[tool.poetry]
 name = "bitly"
 version = "0.1.0"
 description = "URL Shortener"
-authors = [
-    {name = "Sepehr Bazyar",email = "bazyar.sepehr@gmail.com"}
-]
+authors = ["Sepehr Bazyar <bazyar.sepehr@gmail.com>"]
 readme = "README.md"
-requires-python = ">=3.12"
 package-mode = false
-dependencies = [
-    "fastapi (>=0.128.0,<0.129.0)",
-    "uvicorn (>=0.40.0,<0.41.0)",
-    "sqlmodel (>=0.0.31,<0.0.32)",
-    "psycopg2-binary (>=2.9.11,<3.0.0)",
-    "alembic (>=1.17.2,<2.0.0)",
-    "pydantic-settings (>=2.12.0,<3.0.0)",
-    "redis (>=7.1.0,<8.0.0)"
-]
 
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.128.0"
+uvicorn = { extras = ["standard"], version = "^0.40.0" }
+sqlmodel = "^0.0.31"
+psycopg2-binary = "^2.9.11"
+alembic = "^1.17.2"
+pydantic-settings = "^2.12.0"
+redis = "^7.1.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^9.0.2"
+httpx = "^0.28.1"
+pre-commit = "^4.5.1"
+ruff = "^0.14.10"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
-[dependency-groups]
-dev = [
-    "pytest (>=9.0.2,<10.0.0)",
-    "httpx (>=0.28.1,<0.29.0)",
-    "pre-commit (>=4.5.1,<5.0.0)",
-    "ruff (>=0.14.10,<0.15.0)"
-]
-
-
 [tool.ruff]
 line-length = 100
-target-version = "py311"
+target-version = "py312"
 
 [tool.ruff.lint]
 select = [
