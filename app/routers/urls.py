@@ -2,6 +2,7 @@ from fastapi import (
     APIRouter,
     Depends,
     HTTPException,
+    Request,
     Response,
 )
 from redis.asyncio import Redis
@@ -35,6 +36,7 @@ async def shorten_url(
 
 @router.get("/{short_code}")
 async def redirect(
+    request: Request,
     short_code: str,
     db: Session = Depends(get_db),
     redis: Redis = Depends(get_redis),
@@ -43,7 +45,7 @@ async def redirect(
     if not long_url:
         raise HTTPException(404, "Not found")
 
-    await log_visit(db, redis, short_code, "127.0.0.1")
+    await log_visit(db, redis, short_code, request.client.host)
     return Response(status_code=302, headers={"Location": long_url})
 
 
