@@ -1,4 +1,6 @@
 import base64
+import logging
+from datetime import datetime
 
 from redis.asyncio import Redis
 from sqlmodel import Session, select
@@ -8,17 +10,28 @@ from .models import (
     Visit,
 )
 
+logger = logging.getLogger(__name__)
 
-async def create_short_url(db: Session, redis: Redis, long_url: str) -> str:
+
+async def create_short_url(
+    db: Session,
+    redis: Redis,
+    long_url: str,
+    expire_at: datetime | None = None,
+) -> str:
     counter = await redis.incr("url_counter")
     short_code = base64.urlsafe_b64encode(counter.to_bytes(8, "big")).decode().rstrip("=")
 
-    url = URL(original_url=long_url, short_code=short_code)
+    url = URL(
+        original_url=long_url,
+        short_code=short_code,
+        expire_at=expire_at,
+    )
     db.add(url)
     db.commit()
     db.refresh(url)
 
-    await redis.set(f"url:{short_code}", long_url)
+    await redis.set(f"url:{short_code}", long_url, exat=expire_at)
     return short_code
 
 
@@ -27,12 +40,15 @@ async def get_original_url(db: Session, redis: Redis, short_code: str) -> str:
     if long_url:
         return long_url.decode()
 
-    stmt = select(URL).where(URL.short_code == short_code)
+    stmt = select(URL).where(
+        URL.short_code == short_code,
+        URL.expire_at >= datetime.now(),
+    )
     url = db.exec(stmt).first()
-    if not url:
+    if not url:  # or (url.expire_at and url.expire_at < datetime.now()):
         return None
 
-    await redis.set(f"url:{short_code}", url.original_url)
+    # await redis.set(f"url:{short_code}", url.original_url)
     return url.original_url
 
 

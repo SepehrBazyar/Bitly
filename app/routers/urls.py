@@ -30,7 +30,12 @@ async def shorten_url(
     db: Session = Depends(get_db),
     redis: Redis = Depends(get_redis),
 ):
-    short_code = await create_short_url(db, redis, str(request.long_url))
+    short_code = await create_short_url(
+        db,
+        redis,
+        str(request.long_url),
+        expire_at=request.expire_at,
+    )
     return ShortenResponse(short_code=short_code)
 
 
@@ -52,7 +57,7 @@ async def redirect(
 @router.get("/stats/{short_code}", response_model=StatsResponse)
 async def stats(
     short_code: str,
-    redis: Redis = Depends(get_redis),
+    redis: Redis = Depends(get_redis),  # TODO: in service-layer
 ):
     count = await get_stats(redis, short_code)
     return StatsResponse(visit_count=count)

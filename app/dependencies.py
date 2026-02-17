@@ -16,6 +16,7 @@ def get_db():
 
 
 async def get_redis():
+    # TODO: use context manager
     redis = Redis.from_url(settings.REDIS_URL)
     try:
         yield redis
